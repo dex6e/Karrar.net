@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مجموعة الكرار - تسجيل مشترك</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", sans-serif; margin: 0; padding: 0; }
+        body { 
+            background: radial-gradient(circle at top, #0d1b2a, #050914); 
+            color: #ffffff; 
+            padding: 16px; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh;
+        }
+        .card { 
+            background: rgba(16, 26, 48, 0.95); 
+            width: 100%; 
+            max-width: 440px; 
+            border-radius: 24px; 
+            padding: 24px 20px; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1); 
+            border: 1px solid #1f3154; 
+            backdrop-filter: blur(10px);
+        }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid #1f3154; 
+            padding-bottom: 18px; 
+            position: relative;
+        }
+
+        /* --- تصميم اللوجو المتطور --- */
+        .logo-wrap {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px dashed rgba(56, 189, 248, 0.4);
+            animation: rotateOrbit 12s linear infinite;
+        }
+
+        .pulse-core {
+            position: absolute;
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, rgba(3, 105, 161, 0) 70%);
+            animation: corePulse 2.2s infinite ease-in-out;
+        }
+
+        .logo-svg {
+            width: 90px;
+            height: 90px;
+            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.8));
+            animation: floatLogo 3.5s ease-in-out infinite;
+        }
+
+        .wave {
+            animation: waveFlash 1.6s ease-out infinite;
+            transform-origin: 50px 30px;
+        }
+        .wave-2 { animation-delay: 0.4s; }
+        .wave-3 { animation-delay: 0.8s; }
+
+        @keyframes rotateOrbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes corePulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.9; }
+        }
+
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes waveFlash {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; stroke: #38bdf8; }
+            100% { opacity: 0.2; }
+        }
+
+        .brand-title { 
+            font-size: 21px; 
+            font-weight: 800;
+            background: linear-gradient(135deg, #38bdf8, #f0f6fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-sub { 
+            font-size: 12px; 
+            color: #94a3b8; 
+            font-weight: 500;
+        }
+
+        /* --- الحقول والأزرار --- */
+        .form-group { margin-bottom: 14px; text-align: right; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
+        input[type="text"], input[type="tel"] { 
+            width: 100%; 
+            padding: 12px 14px; 
+            background: #091122; 
+            border: 1.5px solid #233554; 
+            border-radius: 11px; 
+            color: #fff; 
+            font-size: 15px; 
+            outline: none; 
+            transition: all 0.25s ease;
+        }
+        input:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        
+        .btn-gps { 
+            width: 100%; 
+            background: linear-gradient(135deg, #0284c7, #0369a1); 
+            color: #fff; 
+            border: none; 
+            padding: 11px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 6px; 
+            transition: opacity 0.2s;
+        }
+        .btn-gps:active { opacity: 0.85; }
+
+        /* --- تعديل قسم الصور لتكون جنب بعض --- */
+        .images-row {
+            display: flex;
+            gap: 10px;
+        }
+        .file-box { 
+            flex: 1;
+            background: #091122; 
+            border: 2px dashed #233554; 
+            border-radius: 12px; 
+            padding: 12px 8px; 
+            text-align: center; 
+        }
+        input[type="file"] { display: none; }
+        .file-label { 
+            display: inline-block; 
+            background: #1e293b; 
+            border: 1px solid #334155;
+            color: #f1f5f9; 
+            padding: 8px 10px; 
+            border-radius: 9px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            width: 100%;
+            text-align: center;
+        }
+        .file-count { display: block; font-size: 10px; color: #38bdf8; margin-top: 6px; }
+
+        .btn-wa { 
+            width: 100%; 
+            background: linear-gradient(135deg, #22c55e, #16a34a); 
+            color: #fff; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 13px; 
+            font-size: 16px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
+        }
+        .btn-wa:active { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <div class="logo-wrap">
+            <div class="orbit-ring"></div>
+            <div class="pulse-core"></div>
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="wave wave-1" d="M38 25 C45 20, 55 20, 62 25" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                <path class="wave wave-2" d="M30 18 C42 10, 58 10, 70 18" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                <path class="wave wave-3" d="M22 11 C39 1, 61 1, 78 11" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                
+                <circle cx="50" cy="30" r="4.5" fill="#f8fafc" stroke="#38bdf8" stroke-width="2"/>
+                <path d="M47 34 L32 82 H68 L53 34 Z" stroke="#38bdf8" stroke-width="2.2" stroke-linejoin="round"/>
+                <path d="M43 45 L57 45 M39 58 L61 58 M35 70 L65 70" stroke="#0284c7" stroke-width="1.8"/>
+                <path d="M43 45 L61 58 M57 45 L39 58" stroke="#38bdf8" stroke-width="1.4"/>
+                <path d="M39 58 L65 70 M61 58 L35 70" stroke="#38bdf8" stroke-width="1.4"/>
+                <circle cx="50" cy="50" r="47" stroke="url(#paint_gold)" stroke-width="2" stroke-dasharray="8 4"/>
+
+                <defs>
+                    <linearGradient id="paint_gold" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#38bdf8"/>
+                        <stop offset="0.5" stop-color="#fbbf24"/>
+                        <stop offset="1" stop-color="#0284c7"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <h2 class="brand-title">مجموعة الكرار</h2>
+        <span class="brand-sub">بوابة تسجيل ومتابعة المشتركين</span>
+    </div>
+
+    <div class="form-group">
+        <label>اسم المشترك:</label>
+        <input type="text" id="custName" placeholder="الاسم الكامل">
+    </div>
+
+    <div class="form-group">
+        <label>الآي بي (IP):</label>
+        <input type="text" id="custIp" placeholder="10.20.X.X">
+    </div>
+
+    <div class="form-group">
+        <label>الرمز / الباسورد:</label>
+        <input type="text" id="custPass" placeholder="رمز النانو / الراوتر">
+    </div>
+
+    <div class="form-group">
+        <label>رقم الهاتف:</label>
+        <input type="tel" id="custPhone" placeholder="077XXXXXXXX">
+    </div>
+
+    <div class="form-group">
+        <label>الموقع الجغرافي (GPS):</label>
+        <input type="text" id="custLoc" readonly placeholder="اضغط لجلب إحداثيات المشترك">
+        <button type="button" class="btn-gps" onclick="getLocation()">📍 تحديد الموقع الحالي تلقائياً</button>
+    </div>
+
+    <!-- صور القطع والتركيب جنب بعض -->
+    <div class="form-group">
+        <label>صور التركيب (نانو / راوتر):</label>
+        <div class="images-row">
+            <div class="file-box">
+                <label class="file-label" for="custPhoto1">📸 صورة (1)</label>
+                <input type="file" id="custPhoto1" accept="image/*" onchange="updateFileCount(1)">
+                <span id="fileCount1" class="file-count">بدون صورة</span>
+            </div>
+            <div class="file-box">
+                <label class="file-label" for="custPhoto2">📸 صورة (2)</label>
+                <input type="file" id="custPhoto2" accept="image/*" onchange="updateFileCount(2)">
+                <span id="fileCount2" class="file-count">بدون صورة</span>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn-wa" onclick="sendToWhatsApp()">🟢 مشاركة إلى كروب الواتساب</button>
+</div>
+
+<script>
+function getLocation() {
+    const locField = document.getElementById('custLoc');
+    if (!navigator.geolocation) {
+        alert("المتصفح لا يدعم سحب اللوكيشن");
+        return;
+    }
+    locField.placeholder = "جاري قراءة القمر الصناعي...";
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            locField.value = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            alert("تم تحديد الموقع بنجاح");
+        },
+        () => {
+            alert("تأكد من تشغيل الـ GPS ومنح الإذن للمتصفح");
+            locField.placeholder = "تعذر سحب الموقع";
+        },
+        { enableHighAccuracy: true }
+    );
+}
+
+function updateFileCount(num) {
+    const fileInput = document.getElementById(`custPhoto${num}`);
+    const txt = document.getElementById(`fileCount${num}`);
+    if (fileInput.files.length > 0) {
+        txt.innerText = "تم الاختيار ✅";
+        txt.style.color = "#22c55e";
+    } else {
+        txt.innerText = "بدون صورة";
+        txt.style.color = "#38bdf8";
+    }
+}
+
+async function sendToWhatsApp() {
+    const name = document.getElementById('custName').value.trim() || 'غير محدد';
+    const ip = document.getElementById('custIp').value.trim() || 'غير محدد';
+    const pass = document.getElementById('custPass').value.trim() || 'غير محدد';
+    const phone = document.getElementById('custPhone').value.trim() || 'غير محدد';
+    const loc = document.getElementById('custLoc').value.trim() || 'غير محدد';
+
+    const message = 
+`📌 *مشترك جديد - مجموعة الكرار*
+━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${name}
+🌐 *الآي بي (IP):* ${ip}
+🔑 *الرمز / الباسورد:* ${pass}
+📞 *الهاتف:* ${phone}
+📍 *الموقع:* ${loc}
+━━━━━━━━━━━━━━━━━━`;
+
+    const file1 = document.getElementById('custPhoto1').files[0];
+    const file2 = document.getElementById('custPhoto2').files[0];
+    const filesToShare = [file1, file2].filter(Boolean);
+
+    if (navigator.canShare && filesToShare.length > 0 && navigator.canShare({ files: filesToShare })) {
+        try {
+            await navigator.share({
+                title: 'مجموعة الكرار',
+                text: message,
+                files: filesToShare
+            });
+            return;
+        } catch (e) {
+            console.log("إلغاء المشاركة");
+        }
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+}
+</script>
+
+</body>
+</html>
