@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="notranslate" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مجموعة الكرار - لوحة تحكم الأدمن وإدارة المشتركين</title>
+    
+    <!-- مكتبة Supabase JS الرسمية -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050914;
+            --card-bg: rgba(16, 26, 48, 0.95);
+            --primary: #38bdf8;
+            --primary-dark: #0284c7;
+            --accent-green: #22c55e;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #1f3154;
+            --border-focus: #38bdf8;
+            --input-bg: #091122;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        body { 
+            background: radial-gradient(circle at top, #0d1b2a, var(--bg-dark)); 
+            color: var(--text-main); 
+            padding: 20px 14px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1050px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* شريط التنقل العلوي بين الصفحات */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(16, 26, 48, 0.85);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-btn-active {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        .nav-btn-maint {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        .nav-btn-maint:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        .card { 
+            background: var(--card-bg); 
+            width: 100%; 
+            border-radius: 24px; 
+            padding: 24px 20px; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08); 
+            border: 1px solid var(--border-color); 
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        /* الهيدر والشعار */
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 18px; 
+            position: relative;
+        }
+
+        .logo-wrap {
+            position: relative;
+            width: 95px;
+            height: 95px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px dashed rgba(56, 189, 248, 0.6);
+            animation: rotateOrbit 12s linear infinite;
+        }
+
+        .orbit-ring-inner {
+            position: absolute;
+            width: 78%;
+            height: 78%;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(56, 189, 248, 0.35);
+            animation: rotateOrbitRev 15s linear infinite;
+        }
+
+        .logo-svg {
+            width: 72px;
+            height: 72px;
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.9));
+        }
+
+        @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotateOrbitRev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        .brand-title { 
+            font-size: 22px; 
+            font-weight: 800;
+            background: linear-gradient(135deg, #38bdf8, #f0f6fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2px;
+        }
+
+        .brand-sub { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            font-weight: 500; 
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+        }
+        .status-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+            animation: pulseGlow 1.5s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
+        /* شبكة الحقول */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 640px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .full-width { grid-column: span 2; }
+        }
+
+        .form-group { text-align: right; }
+        label { 
+            display: block; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #cbd5e1; 
+            margin-bottom: 6px; 
+        }
+
+        .req { color: #f87171; }
+
+        input[type="text"], input[type="tel"], textarea { 
+            width: 100%; 
+            padding: 12px 14px; 
+            background: var(--input-bg); 
+            border: 1.5px solid #233554; 
+            border-radius: 11px; 
+            color: #fff; 
+            font-size: 14px; 
+            outline: none; 
+            transition: all 0.25s ease;
+        }
+        input:focus, textarea:focus { 
+            border-color: var(--border-focus); 
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); 
+        }
+        
+        .gps-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .btn-gps { 
+            flex: 1;
+            background: linear-gradient(135deg, #0284c7, #0369a1); 
+            color: #fff; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 10px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.2s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-gps:hover { filter: brightness(1.15); }
+        .btn-gps-secondary { background: #1e293b; border: 1px solid #334155; }
+
+        /* منطقة رفع ومعاينة الصور */
+        .file-box { 
+            background: var(--input-bg); 
+            border: 2px dashed #233554; 
+            border-radius: 12px; 
+            padding: 14px; 
+            text-align: center; 
+        }
+        input[type="file"] { display: none; }
+        .file-label { 
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #1e293b; 
+            border: 1px solid #334155;
+            color: #f1f5f9; 
+            padding: 10px 20px; 
+            border-radius: 9px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: 0.2s;
+        }
+        .file-label:hover { background: #2a3952; border-color: var(--primary); }
+        #fileCount { display: block; font-size: 12px; color: var(--primary); margin-top: 8px; }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .preview-item {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #38bdf8;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(239, 68, 68, 0.85);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            cursor: pointer;
+            line-height: 18px;
+        }
+
+        /* أزرار الإجراءات للنموذج */
+        .btn-group { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 16px; 
+            flex-wrap: wrap; 
+        }
+        .btn { 
+            flex: 1; 
+            min-width: 140px;
+            padding: 13px; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            font-weight: 800; 
+            border: none; 
+            cursor: pointer; 
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-save { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35); }
+        .btn-wa { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35); }
+        .btn-cancel-edit { background: #475569; color: #fff; display: none; }
+
+        /* رأس جدول المشتركين وأزرار التصدير */
+        .dash-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 14px; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+        }
+        .dash-title { 
+            font-size: 18px; 
+            color: var(--primary); 
+            font-weight: 700; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sub-counter {
+            font-size: 12px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            padding: 3px 9px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .export-btns { 
+            display: flex; 
+            gap: 6px; 
+            flex-wrap: wrap; 
+        }
+        .btn-exp { 
+            background: #1e293b; 
+            color: var(--primary); 
+            border: 1px solid #334155; 
+            padding: 7px 11px; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        .btn-exp:hover { background: #334155; color: #fff; }
+        
+        .search-box {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        /* جدول البيانات */
+        .table-responsive { 
+            width: 100%; 
+            overflow-x: auto; 
+            border-radius: 12px; 
+            border: 1px solid #233554; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            text-align: right; 
+            font-size: 13px; 
+            white-space: nowrap;
+        }
+        th { 
+            background: #091122; 
+            color: var(--primary); 
+            padding: 12px 10px; 
+            font-weight: 700; 
+            border-bottom: 1px solid #233554; 
+        }
+        td { 
+            padding: 10px; 
+            border-bottom: 1px solid #1f3154; 
+            color: #cbd5e1; 
+            vertical-align: middle;
+        }
+        tr:hover { background: rgba(56, 189, 248, 0.05); }
+
+        .btn-table-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            gap: 4px;
+            transition: 0.15s;
+        }
+        .btn-del { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-del:hover { background: #ef4444; color: #fff; }
+        .btn-edit { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); margin-left: 3px; }
+        .btn-edit:hover { background: #0284c7; color: #fff; }
+        .btn-task { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); margin-left: 3px; }
+        .btn-task:hover { background: #d97706; color: #fff; }
+
+        .status-chip {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .copy-chip {
+            cursor: pointer;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            display: inline-block;
+        }
+        .copy-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+        .btn-chat-wa {
+            color: #22c55e;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-chat-wa:hover { text-decoration: underline; }
+
+        /* Toast Notifications */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            border-right: 4px solid var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 350px;
+        }
+        .toast.success { border-right-color: #22c55e; }
+        .toast.error { border-right-color: #ef4444; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Modal نافذة توجيه التاسك والصور */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+        }
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            padding: 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+
+        /* تنسيق الطباعة */
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            .card { background: #fff !important; color: #000 !important; border: none; box-shadow: none; }
+            .top-nav, .btn-group, .btn-gps, .file-box, .export-btns, .form-card, .search-box, .btn-table-action, #toastContainer, .modal-overlay, .status-badge { display: none !important; }
+            table { color: #000 !important; border: 1px solid #999; }
+            th { background: #eee !important; color: #000 !important; }
+            td { border-bottom: 1px solid #ccc !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- شريط التنقل العلوي بين صفحات النظام -->
+    <div class="top-nav">
+        <div style="font-weight:800; font-size:14px; color:#38bdf8; display:flex; align-items:center; gap:6px;">
+            ⚡ شبكة مجموعة الكرار
+        </div>
+        <div class="nav-links">
+            <a href="rhk.html" class="nav-btn nav-btn-active">👑 لوحة الأدمن (المشتركين)</a>
+            <a href="maintenance.html" class="nav-btn nav-btn-maint">🔧 لوحة موظفي الصيانة (التاسكات)</a>
+        </div>
+    </div>
+
+    <!-- كارت تسجيل وتعديل المشترك -->
+    <div class="card form-card">
+        <div class="header">
+            <div class="logo-wrap">
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring-inner"></div>
+                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M42 22 C46 19, 54 19, 58 22" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M36 16 C43 11, 57 11, 64 16" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M30 10 C40 3, 60 3, 70 10" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="50" cy="27" r="4.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2"/>
+                    <path d="M47 31 L33 82 H67 L53 31 Z" stroke="#38bdf8" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M43 43 L57 43 M39 56 L61 56 M36 69 L64 69" stroke="#0284c7" stroke-width="1.8"/>
+                    <path d="M43 43 L61 56 M57 43 L39 56" stroke="#38bdf8" stroke-width="1.2"/>
+                    <path d="M39 56 L64 69 M61 56 L36 69" stroke="#38bdf8" stroke-width="1.2"/>
+                </svg>
+            </div>
+            <h2 class="brand-title">مجموعة الكرار</h2>
+            <span class="brand-sub">لوحة الأدمن - إدارة المشتركين وتوجيه الصيانة</span>
+            <div>
+                <span class="status-badge" id="storageStatusBadge">
+                    <span class="status-pulse"></span>
+                    <span>🟢 متصل أونلاين بسحابة Supabase</span>
+                </span>
+            </div>
+        </div>
+
+        <input type="hidden" id="editingSubId" value="">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>اسم المشترك الكامل <span class="req">*</span>:</label>
+                <input type="text" id="custName" placeholder="أدخل اسم المشترك">
+            </div>
+
+            <div class="form-group">
+                <label>عنوان الآي بي (IP):</label>
+                <input type="text" id="custIp" placeholder="مثال: 10.20.15.50">
+            </div>
+
+            <div class="form-group">
+                <label>الرمز / الباسورد:</label>
+                <input type="text" id="custPass" placeholder="رمز النانو أو الراوتر">
+            </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="tel" id="custPhone" placeholder="077XXXXXXXX">
+            </div>
+
+            <!-- خانة الحالة الحرة بدون قائمة منسدلة -->
+            <div class="form-group">
+                <label>حالة المشترك (اكتب بكل حرية):</label>
+                <input type="text" id="custStatus" placeholder="مثال: نشط، مفصول، عطل راوتر، يحتاج سلك، فحص إشارة...">
+            </div>
+
+            <!-- خانة الملاحظات الحرة -->
+            <div class="form-group">
+                <label>ملاحظات إضافية:</label>
+                <input type="text" id="custNotes" placeholder="أي ملاحظات تخص البرج أو الاشتراك أو النانو...">
+            </div>
+
+            <div class="form-group full-width">
+                <label>الموقع الجغرافي (GPS):</label>
+                <input type="text" id="custLoc" placeholder="الصق رابط الخريطة أو اسحب تلقائياً">
+                <div class="gps-actions">
+                    <button type="button" class="btn-gps" onclick="getLocation()">📍 سحب تلقائي (GPS)</button>
+                    <button type="button" class="btn-gps btn-gps-secondary" onclick="openMaps()">🗺️ فتح خرائط جوجل</button>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>صور القطع والتركيب (نانو / راوتر):</label>
+                <div class="file-box">
+                    <label class="file-label" for="custPhotos">
+                        📸 التقاط أو اختيار صور
+                    </label>
+                    <input type="file" id="custPhotos" multiple accept="image/*" onchange="handleFileSelect(event)">
+                    <span id="fileCount">لم يتم اختيار أي صورة بعد</span>
+                    <div class="preview-container" id="photoPreviewContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-save" id="btnSave" onclick="saveSubscriber()">☁️ حفظ في السحابة</button>
+            <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">🟢 إرسال للواتساب</button>
+            <button type="button" class="btn btn-cancel-edit" id="btnCancelEdit" onclick="cancelEdit()">❌ إلغاء التعديل</button>
+        </div>
+    </div>
+
+    <!-- كارت قاعدة البيانات والتحكم -->
+    <div class="card">
+        <div class="dash-header">
+            <div class="dash-title">
+                📋 سجل المشتركين (سحابي)
+                <span class="sub-counter" id="subscribersCount">0 مشترك</span>
+            </div>
+            <div class="export-btns">
+                <button class="btn-exp" onclick="loadSubscribers()" title="تحديث القائمة من السحابة">🔄 تحديث</button>
+                <button class="btn-exp" onclick="exportToExcel()" title="تصدير جدول إكسل">📊 Excel</button>
+                <button class="btn-exp" onclick="exportToWord()" title="تصدير ملف وورد">📄 Word</button>
+                <button class="btn-exp" onclick="exportJSONBackup()" title="تصدير نسخة احتياطية">💾 نسخة احتياطية</button>
+                <label class="btn-exp" style="display:inline-flex; align-items:center; cursor:pointer;" title="استيراد نسخة احتياطية للسحابة">
+                    📂 استرجاع
+                    <input type="file" id="importJsonInput" accept=".json" style="display:none;" onchange="importJSONBackup(event)">
+                </label>
+                <button class="btn-exp" onclick="window.print()" title="طباعة السجل">🖨️ طباعة</button>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن أي مشترك (بالاسم، الـ IP، الهاتف، الحالة، أو الملاحظات)..." onkeyup="filterSubscribers()">
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم المشترك</th>
+                        <th>IP</th>
+                        <th>الباسورد</th>
+                        <th>الهاتف</th>
+                        <th>الحالة</th>
+                        <th>الملاحظات</th>
+                        <th>الموقع</th>
+                        <th>الصور</th>
+                        <th>تاريخ الإضافة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="subscribersTable">
+                    <tr><td colspan="11" style="text-align:center; padding: 25px;">جاري الاتصال بالسحابة وتحميل المشتركين...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal نافذة توجيه مهمة صيانة للفنيين -->
+<div class="modal-overlay" id="taskModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 style="font-size:16px; color:#f59e0b; display:flex; align-items:center; gap:6px;">
+                🛠️ توجيه مهمة صيانة للفنيين
+            </h3>
+            <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+        </div>
+
+        <input type="hidden" id="taskSubId">
+        <input type="hidden" id="taskSubLoc">
+
+        <div style="display:flex; flex-direction:column; gap:12px; text-align:right;">
+            <div>
+                <label>المشترك المستهدف:</label>
+                <input type="text" id="taskCustName" readonly style="background:#1e293b; color:#38bdf8; font-weight:700;">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <label>هاتف المشترك:</label>
+                    <input type="text" id="taskCustPhone" readonly style="background:#1e293b; color:#cbd5e1;">
+                </div>
+                <div>
+                    <label>الـ IP:</label>
+                    <input type="text" id="taskCustIp" readonly style="background:#1e293b; color:#cbd5e1;">
+                </div>
+            </div>
+
+            <div>
+                <label>نوع العطل / المطلوب تنفيذه <span class="req">*</span>:</label>
+                <input type="text" id="taskTitle" placeholder="مثال: فحص النانو، استبدال سلك، تغيير راوتر، صيانة إشارة...">
+            </div>
+
+            <div>
+                <label>اسم الفني المكلف (أو الفريق):</label>
+                <input type="text" id="taskTechName" placeholder="مثال: أحمد الصيانة، علي، فني البرج...">
+            </div>
+
+            <div>
+                <label>تفاصيل وتعليمات إضافية للفني:</label>
+                <textarea id="taskDesc" rows="3" placeholder="اكتب أي توجيهات إضافية للفني تفيده في الموقع..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="button" class="btn btn-save" style="background:linear-gradient(135deg, #f59e0b, #d97706);" onclick="submitMaintenanceTask()">
+                    🚀 إرسال لصفحة الصيانة
+                </button>
+                <button type="button" class="btn btn-wa" onclick="sendTaskViaWhatsApp()">
+                    🟢 إرسال عبر الواتساب للفني
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal نافذة استعراض صور المشترك -->
+<div class="modal-overlay" id="photoModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 style="font-size:16px; color:#38bdf8;" id="modalPhotoTitle">صور التركيب</h3>
+            <button class="modal-close" onclick="closePhotoModal()">&times;</button>
+        </div>
+        <div id="modalPhotoBody" style="display:flex; flex-direction:column; gap:12px; max-height:70vh; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- حاوية رسائل التنبيه العائمة -->
+<div id="toastContainer"></div>
+
+<script>
+/**
+ * مجموعة الكرار - لوحة الأدمن الرئيسية
+ * إدارة المشتركين وتوجيه مهام الصيانة للفنيين
+ */
+
+const SUPABASE_URL = 'https://ojgogddxpedpeodkybbi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qZ29nZGR4cGVkcGVvZGt5YmJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyODAwMzcsImV4cCI6MjEwODg1NjAzN30.xfKXw0k0f0WalHI1JsKNdwcphpgYab-l0YyAJO-FRfM';
+
+let supabaseClient = null;
+let allSubscribers = [];
+let selectedImagesBase64 = [];
+
+window.addEventListener('DOMContentLoaded', () => {
+    initSupabase();
+    loadSubscribers();
+});
+
+function initSupabase() {
+    try {
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+    } catch (e) {
+        console.error("خطأ Supabase:", e);
+    }
+}
+
+// --- 1. جلب المشتركين من السحابة ---
+async function loadSubscribers() {
+    const tbody = document.getElementById('subscribersTable');
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 25px; color:#38bdf8;">🔄 جاري مزامنة وجلب البيانات من السحابة...</td></tr>';
+
+    if (!supabaseClient) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:#ef4444; padding:20px;">تعذر الاتصال بالسحابة</td></tr>';
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('subscribers')
+            .select('*')
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        allSubscribers = data || [];
+
+        // دمج الحالة والملاحظات المحفوظة محلياً أو سحابياً
+        allSubscribers.forEach(sub => {
+            const extra = getExtraSubData(sub.id);
+            if (!sub.status && extra.status) sub.status = extra.status;
+            if (!sub.notes && extra.notes) sub.notes = extra.notes;
+        });
+
+        renderTable(allSubscribers);
+        
+        document.getElementById('storageStatusBadge').innerHTML = `
+            <span class="status-pulse"></span>
+            <span>🟢 متصل أونلاين بسحابة Supabase (${allSubscribers.length} مشترك)</span>
+        `;
+    } catch (err) {
+        console.error("خطأ الاتصال:", err);
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:#ef4444; padding:20px;">تعذر الاتصال بالخادم السحابي. تحقق من اتصال الإنترنت.</td></tr>';
+        showToast("فشل الاتصال بالخادم السحابي", "error");
+    }
+}
+
+// --- 2. رسم جدول المشتركين ---
+function renderTable(list) {
+    const tbody = document.getElementById('subscribersTable');
+    document.getElementById('subscribersCount').innerText = `${list.length} مشترك`;
+
+    if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 30px; color:#94a3b8;">لا يوجد مشتركين مسجلين حالياً.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    list.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        
+        // رابط الخريطة
+        let locHTML = '<span style="color:#64748b;">بدون</span>';
+        if (item.loc && item.loc !== 'غير محدد') {
+            locHTML = `<a href="${escapeHtml(item.loc)}" target="_blank" rel="noopener noreferrer" style="color:#38bdf8; text-decoration:none; font-weight:600;">📍 الخريطة</a>`;
+        }
+
+        // الهاتف مع زر واتساب مباشر
+        let phoneHTML = escapeHtml(item.phone || 'غير محدد');
+        if (item.phone && item.phone !== 'غير محدد') {
+            const cleanPhone = item.phone.replace(/[^0-9]/g, '');
+            phoneHTML = `
+                ${escapeHtml(item.phone)}
+                <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-chat-wa" title="مراسلة واتساب">💬</a>
+            `;
+        }
+
+        // الصور
+        const localPhotos = getLocalPhotosForSub(item.id);
+        const photosCount = localPhotos.length;
+        let photosHTML = '<span style="color:#64748b;">0</span>';
+        if (photosCount > 0) {
+            photosHTML = `<button type="button" class="btn-exp" style="padding:2px 8px; font-size:11px;" onclick="viewPhotos(${item.id})">🖼️ (${photosCount})</button>`;
+        }
+
+        // شارة الحالة الحرة
+        const statusText = item.status || 'غير محدد';
+        const notesText = item.notes || '-';
+
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><b>${escapeHtml(item.name)}</b></td>
+            <td>
+                <span class="copy-chip" onclick="copyText('${escapeHtml(item.ip)}')" title="اضغط للنسخ">
+                    ${escapeHtml(item.ip)} 📋
+                </span>
+            </td>
+            <td>
+                <span class="copy-chip" onclick="copyText('${escapeHtml(item.pass)}')" title="اضغط للنسخ">
+                    ${escapeHtml(item.pass)} 📋
+                </span>
+            </td>
+            <td>${phoneHTML}</td>
+            <td><span class="status-chip" title="${escapeHtml(statusText)}">${escapeHtml(statusText)}</span></td>
+            <td style="max-width:140px; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(notesText)}">${escapeHtml(notesText)}</td>
+            <td>${locHTML}</td>
+            <td>${photosHTML}</td>
+            <td style="font-size:11px; color:#94a3b8;">${escapeHtml(item.date || '')}</td>
+            <td>
+                <button type="button" class="btn-table-action btn-task" onclick="openTaskModal(${item.id})" title="توجيه مهمة صيانة للفنيين">🛠️ تاسك</button>
+                <button type="button" class="btn-table-action btn-edit" onclick="startEditSub(${item.id})">✏️ تعديل</button>
+                <button type="button" class="btn-table-action btn-del" onclick="deleteSub(${item.id})">🗑️ حذف</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// --- 3. حفظ وتعديل المشترك ---
+async function saveSubscriber() {
+    const editId = document.getElementById('editingSubId').value;
+    const name = document.getElementById('custName').value.trim();
+    const ip = document.getElementById('custIp').value.trim();
+    const pass = document.getElementById('custPass').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const status = document.getElementById('custStatus').value.trim() || 'نشط';
+    const notes = document.getElementById('custNotes').value.trim();
+    const loc = document.getElementById('custLoc').value.trim();
+
+    if (!name) {
+        showToast("يرجى كتابة اسم المشترك أولاً", "error");
+        document.getElementById('custName').focus();
+        return;
+    }
+
+    if (!supabaseClient) {
+        showToast("لا يوجد اتصال بسحابة Supabase", "error");
+        return;
+    }
+
+    const subRecord = {
+        name: name,
+        ip: ip || 'غير محدد',
+        pass: pass || 'غير محدد',
+        phone: phone || 'غير محدد',
+        loc: loc || 'غير محدد',
+        date: new Date().toLocaleDateString('ar-IQ') + ' ' + new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const saveBtn = document.getElementById('btnSave');
+    saveBtn.disabled = true;
+    saveBtn.innerText = "جاري الحفظ في السحابة...";
+
+    try {
+        if (editId) {
+            // تحديث في السحابة
+            let updatePayload = { ...subRecord, status, notes };
+            let updateRes = await supabaseClient.from('subscribers').update(updatePayload).eq('id', Number(editId));
+
+            if (updateRes.error && updateRes.error.message.includes("Could not find")) {
+                // إذا لم تكن الأعمدة منشأة بعد في السحابة، احفظ الحقول الأساسية
+                await supabaseClient.from('subscribers').update(subRecord).eq('id', Number(editId));
+            }
+
+            saveExtraSubData(Number(editId), status, notes);
+
+            if (selectedImagesBase64.length > 0) {
+                saveLocalPhotosForSub(Number(editId), selectedImagesBase64);
+            }
+
+            showToast("✓ تم تحديث بيانات المشترك في السحابة بنجاح!", "success");
+            cancelEdit();
+            loadSubscribers();
+        } else {
+            // إضافة في السحابة
+            let insertPayload = { ...subRecord, status, notes };
+            let insertRes = await supabaseClient.from('subscribers').insert([insertPayload]).select();
+
+            let newId = null;
+            if (insertRes.error && insertRes.error.message.includes("Could not find")) {
+                let fallbackRes = await supabaseClient.from('subscribers').insert([subRecord]).select();
+                if (fallbackRes.error) throw fallbackRes.error;
+                if (fallbackRes.data && fallbackRes.data.length > 0) newId = fallbackRes.data[0].id;
+            } else if (!insertRes.error && insertRes.data && insertRes.data.length > 0) {
+                newId = insertRes.data[0].id;
+            }
+
+            if (newId) {
+                saveExtraSubData(newId, status, notes);
+                if (selectedImagesBase64.length > 0) {
+                    saveLocalPhotosForSub(newId, selectedImagesBase64);
+                }
+            }
+
+            showToast("✓ تم حفظ المشترك في السحابة بنجاح!", "success");
+            clearForm();
+            loadSubscribers();
+        }
+    } catch (e) {
+        console.error("فشل الحفظ:", e);
+        showToast("فشل الحفظ: " + (e.message || e), "error");
+    } finally {
+        saveBtn.disabled = false;
+        if (!document.getElementById('editingSubId').value) {
+            saveBtn.innerText = "☁️ حفظ في السحابة";
+        } else {
+            saveBtn.innerText = "☁️ تحديث في السحابة";
+        }
+    }
+}
+
+// --- 4. حذف المشترك ---
+async function deleteSub(id) {
+    if (!confirm("هل أنت متأكد من حذف هذا المشترك نهائياً من السحابة؟")) return;
+
+    try {
+        const { error } = await supabaseClient.from('subscribers').delete().eq('id', id);
+        if (error) throw error;
+
+        removeLocalPhotosForSub(id);
+        removeExtraSubData(id);
+        showToast("✓ تم حذف المشترك من السحابة بنجاح", "success");
+        loadSubscribers();
+    } catch (e) {
+        showToast("فشل الحذف من السحابة: " + (e.message || e), "error");
+    }
+}
+
+// --- 5. وضع التعديل وإلغاؤه ---
+function startEditSub(id) {
+    const sub = allSubscribers.find(s => s.id === id);
+    if (!sub) return;
+
+    document.getElementById('editingSubId').value = sub.id;
+    document.getElementById('custName').value = sub.name || '';
+    document.getElementById('custIp').value = sub.ip === 'غير محدد' ? '' : (sub.ip || '');
+    document.getElementById('custPass').value = sub.pass === 'غير محدد' ? '' : (sub.pass || '');
+    document.getElementById('custPhone').value = sub.phone === 'غير محدد' ? '' : (sub.phone || '');
+    document.getElementById('custStatus').value = sub.status || '';
+    document.getElementById('custNotes').value = sub.notes || '';
+    document.getElementById('custLoc').value = sub.loc === 'غير محدد' ? '' : (sub.loc || '');
+
+    selectedImagesBase64 = getLocalPhotosForSub(sub.id);
+    renderPhotoPreviews();
+
+    document.getElementById('btnSave').innerText = "☁️ تحديث في السحابة";
+    document.getElementById('btnCancelEdit').style.display = "inline-block";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast(`وضع التعديل للمشترك: ${sub.name}`, "info");
+}
+
+function cancelEdit() {
+    document.getElementById('editingSubId').value = '';
+    clearForm();
+    document.getElementById('btnSave').innerText = "☁️ حفظ في السحابة";
+    document.getElementById('btnCancelEdit').style.display = "none";
+}
+
+function clearForm() {
+    document.getElementById('custName').value = '';
+    document.getElementById('custIp').value = '';
+    document.getElementById('custPass').value = '';
+    document.getElementById('custPhone').value = '';
+    document.getElementById('custStatus').value = '';
+    document.getElementById('custNotes').value = '';
+    document.getElementById('custLoc').value = '';
+    document.getElementById('custPhotos').value = '';
+    selectedImagesBase64 = [];
+    renderPhotoPreviews();
+}
+
+// --- 6. توجيه مهمة صيانة للفنيين (Task Assignment) ---
+function openTaskModal(subId) {
+    const sub = allSubscribers.find(s => s.id === subId);
+    if (!sub) return;
+
+    document.getElementById('taskSubId').value = sub.id;
+    document.getElementById('taskCustName').value = sub.name;
+    document.getElementById('taskCustPhone').value = sub.phone;
+    document.getElementById('taskCustIp').value = sub.ip;
+    document.getElementById('taskSubLoc').value = sub.loc;
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskTechName').value = '';
+    document.getElementById('taskDesc').value = '';
+
+    document.getElementById('taskModal').style.display = 'flex';
+}
+
+function closeTaskModal() {
+    document.getElementById('taskModal').style.display = 'none';
+}
+
+async function submitMaintenanceTask() {
+    const subId = document.getElementById('taskSubId').value;
+    const custName = document.getElementById('taskCustName').value;
+    const custPhone = document.getElementById('taskCustPhone').value;
+    const custIp = document.getElementById('taskCustIp').value;
+    const custLoc = document.getElementById('taskSubLoc').value;
+    const title = document.getElementById('taskTitle').value.trim();
+    const tech = document.getElementById('taskTechName').value.trim() || 'الصيانة العامة';
+    const desc = document.getElementById('taskDesc').value.trim();
+
+    if (!title) {
+        showToast("يرجى كتابة نوع العطل أو المطلوب", "error");
+        return;
+    }
+
+    const newTask = {
+        id: Date.now(),
+        subscriber_id: Number(subId),
+        cust_name: custName,
+        cust_phone: custPhone,
+        cust_ip: custIp,
+        cust_loc: custLoc,
+        task_title: title,
+        task_desc: desc,
+        status: 'قيد الانتظار',
+        technician_name: tech,
+        technician_notes: '',
+        date: new Date().toLocaleDateString('ar-IQ') + ' ' + new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    // حفظ في السحابة إذا كان جدول tasks متاحاً
+    if (supabaseClient) {
+        try {
+            await supabaseClient.from('tasks').insert([newTask]);
+        } catch(e) {}
+    }
+
+    // حفظ محلياً لضمان الظهور الفوري في صفحة الصيانة
+    saveTaskLocally(newTask);
+
+    closeTaskModal();
+    showToast("✓ تم توجيه المهمة بنجاح إلى صفحة موظفي الصيانة!", "success");
+}
+
+function sendTaskViaWhatsApp() {
+    const custName = document.getElementById('taskCustName').value;
+    const custPhone = document.getElementById('taskCustPhone').value;
+    const custIp = document.getElementById('taskCustIp').value;
+    const custLoc = document.getElementById('taskSubLoc').value;
+    const title = document.getElementById('taskTitle').value.trim() || 'صيانة عطل';
+    const tech = document.getElementById('taskTechName').value.trim() || 'فني الصيانة';
+    const desc = document.getElementById('taskDesc').value.trim() || 'يرجى التوجه للموقع والمعاينة';
+
+    const message = 
+`🚨 *تاسك صيانة جديد - مجموعة الكرار*
+━━━━━━━━━━━━━━━━━━
+👨‍🔧 *المكلف:* ${tech}
+📌 *المطلوب:* ${title}
+👤 *المشترك:* ${custName}
+📞 *الهاتف:* ${custPhone}
+🌐 *الـ IP:* ${custIp}
+📝 *التعليمات:* ${desc}
+📍 *الموقع:* ${custLoc}
+━━━━━━━━━━━━━━━━━━`;
+
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+function saveTaskLocally(task) {
+    try {
+        let tasks = JSON.parse(localStorage.getItem('karrar_maint_tasks') || '[]');
+        tasks.unshift(task);
+        localStorage.setItem('karrar_maint_tasks', JSON.stringify(tasks));
+    } catch(e) {}
+}
+
+// --- 7. مساعدة البيانات الإضافية للحالة والملاحظات والصور ---
+function saveExtraSubData(id, status, notes) {
+    try {
+        localStorage.setItem(`karrar_sub_extra_${id}`, JSON.stringify({ status, notes }));
+    } catch(e) {}
+}
+
+function getExtraSubData(id) {
+    try {
+        const val = localStorage.getItem(`karrar_sub_extra_${id}`);
+        return val ? JSON.parse(val) : { status: '', notes: '' };
+    } catch(e) { return { status: '', notes: '' }; }
+}
+
+function removeExtraSubData(id) {
+    try {
+        localStorage.removeItem(`karrar_sub_extra_${id}`);
+    } catch(e) {}
+}
+
+function saveLocalPhotosForSub(id, photos) {
+    try {
+        localStorage.setItem(`karrar_sub_photos_${id}`, JSON.stringify(photos));
+    } catch(e) {}
+}
+
+function getLocalPhotosForSub(id) {
+    try {
+        const val = localStorage.getItem(`karrar_sub_photos_${id}`);
+        return val ? JSON.parse(val) : [];
+    } catch(e) { return []; }
+}
+
+function removeLocalPhotosForSub(id) {
+    try {
+        localStorage.removeItem(`karrar_sub_photos_${id}`);
+    } catch(e) {}
+}
+
+function viewPhotos(subId) {
+    const sub = allSubscribers.find(s => s.id === subId);
+    const photos = getLocalPhotosForSub(subId);
+
+    if (photos.length === 0) {
+        showToast("لا توجد صور محفوظة لهذا المشترك", "info");
+        return;
+    }
+
+    document.getElementById('modalPhotoTitle').innerText = `صور المشترك: ${sub ? sub.name : ''}`;
+    const body = document.getElementById('modalPhotoBody');
+    body.innerHTML = '';
+
+    photos.forEach(photoSrc => {
+        const img = document.createElement('img');
+        img.src = photoSrc;
+        img.style.width = '100%';
+        img.style.borderRadius = '10px';
+        img.style.border = '1px solid #334155';
+        body.appendChild(img);
+    });
+
+    document.getElementById('photoModal').style.display = 'flex';
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').style.display = 'none';
+}
+
+// --- 8. معالجة الصور المختارة ---
+function handleFileSelect(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedImagesBase64.push(e.target.result);
+            renderPhotoPreviews();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderPhotoPreviews() {
+    const container = document.getElementById('photoPreviewContainer');
+    const countSpan = document.getElementById('fileCount');
+
+    container.innerHTML = '';
+    if (selectedImagesBase64.length === 0) {
+        countSpan.innerText = "لم يتم اختيار أي صورة بعد";
+        return;
+    }
+
+    countSpan.innerText = `تم اختيار ${selectedImagesBase64.length} صورة`;
+
+    selectedImagesBase64.forEach((src, index) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.innerHTML = `
+            <img src="${src}" alt="صورة">
+            <button type="button" class="preview-remove" onclick="removeImage(${index})">&times;</button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function removeImage(index) {
+    selectedImagesBase64.splice(index, 1);
+    renderPhotoPreviews();
+}
+
+// --- 9. وظائف الموقع GPS والخرائط ---
+function getLocation() {
+    const locField = document.getElementById('custLoc');
+    if (!navigator.geolocation) {
+        showToast("المتصفح لا يدعم ميزة سحب الموقع تلقائياً", "error");
+        return;
+    }
+
+    locField.placeholder = "جاري قراءة إحداثيات القمر الصناعي...";
+    showToast("جاري الاتصال بالـ GPS...", "info");
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            locField.value = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            showToast("✓ تم تحديد الموقع الجغرافي بنجاح", "success");
+        },
+        (err) => {
+            showToast("تعذر سحب الموقع. تأكد من تفعيل الـ GPS وإعطاء الإذن.", "error");
+            locField.placeholder = "الصق رابط الخريطة هنا";
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
+
+function openMaps() {
+    window.open("https://maps.google.com", "_blank", "noopener,noreferrer");
+}
+
+// --- 10. إرسال الواتساب من النموذج ---
+async function sendToWhatsApp() {
+    const name = document.getElementById('custName').value.trim() || 'غير محدد';
+    const ip = document.getElementById('custIp').value.trim() || 'غير محدد';
+    const pass = document.getElementById('custPass').value.trim() || 'غير محدد';
+    const phone = document.getElementById('custPhone').value.trim() || 'غير محدد';
+    const status = document.getElementById('custStatus').value.trim() || 'غير محدد';
+    const notes = document.getElementById('custNotes').value.trim() || 'لا توجد ملاحظات';
+    const loc = document.getElementById('custLoc').value.trim() || 'غير محدد';
+
+    const message = 
+`📌 *مشترك جديد - مجموعة الكرار*
+━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${name}
+🌐 *الآي بي (IP):* ${ip}
+🔑 *الرمز / الباسورد:* ${pass}
+📞 *الهاتف:* ${phone}
+🏷️ *الحالة:* ${status}
+📝 *الملاحظات:* ${notes}
+📍 *الموقع:* ${loc}
+━━━━━━━━━━━━━━━━━━`;
+
+    const fileInput = document.getElementById('custPhotos');
+    const files = fileInput.files;
+
+    if (navigator.canShare && files && files.length > 0 && navigator.canShare({ files: Array.from(files) })) {
+        try {
+            await navigator.share({
+                title: 'مجموعة الكرار',
+                text: message,
+                files: Array.from(files)
+            });
+            return;
+        } catch (e) {}
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', "noopener,noreferrer");
+}
+
+// --- 11. فلترة وبحث شامل ---
+function filterSubscribers() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!query) {
+        renderTable(allSubscribers);
+        return;
+    }
+
+    const filtered = allSubscribers.filter(item => {
+        return (
+            (item.name && item.name.toLowerCase().includes(query)) ||
+            (item.ip && item.ip.toLowerCase().includes(query)) ||
+            (item.phone && item.phone.toLowerCase().includes(query)) ||
+            (item.pass && item.pass.toLowerCase().includes(query)) ||
+            (item.status && item.status.toLowerCase().includes(query)) ||
+            (item.notes && item.notes.toLowerCase().includes(query))
+        );
+    });
+
+    renderTable(filtered);
+}
+
+// --- 12. التصدير والنسخ الاحتياطي ---
+function exportToExcel() {
+    if (allSubscribers.length === 0) {
+        showToast("لا توجد بيانات لتصديرها", "info");
+        return;
+    }
+
+    let csvContent = "\uFEFFالرقم,اسم المشترك,IP,الباسورد,الهاتف,الحالة,الملاحظات,الموقع,تاريخ الإضافة\n";
+    allSubscribers.forEach((s, idx) => {
+        const cleanName = (s.name || '').replace(/,/g, ' ');
+        const cleanLoc = (s.loc || '').replace(/,/g, ' ');
+        const cleanStatus = (s.status || '').replace(/,/g, ' ');
+        const cleanNotes = (s.notes || '').replace(/,/g, ' ');
+        csvContent += `${idx + 1},"${cleanName}","${s.ip || ''}","${s.pass || ''}","${s.phone || ''}","${cleanStatus}","${cleanNotes}","${cleanLoc}","${s.date || ''}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    downloadBlob(blob, `مشتركي_الكرار_${getTodayString()}.csv`);
+    showToast("✓ تم تصدير ملف الإكسل بنجاح", "success");
+}
+
+function exportToWord() {
+    if (allSubscribers.length === 0) {
+        showToast("لا توجد بيانات لتصديرها", "info");
+        return;
+    }
+
+    let rows = '';
+    allSubscribers.forEach((s, idx) => {
+        rows += `
+            <tr>
+                <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${idx + 1}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px;"><b>${escapeHtml(s.name)}</b></td>
+                <td style="border:1px solid #cbd5e1; padding:8px; font-family:monospace;">${escapeHtml(s.ip)}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px; font-family:monospace;">${escapeHtml(s.pass)}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px;">${escapeHtml(s.phone)}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px;">${escapeHtml(s.status || '')}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px;">${escapeHtml(s.notes || '')}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px; font-size:11px;">${escapeHtml(s.loc)}</td>
+                <td style="border:1px solid #cbd5e1; padding:8px; font-size:11px;">${escapeHtml(s.date || '')}</td>
+            </tr>
+        `;
+    });
+
+    const wordHTML = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>سجل مشتركين مجموعة الكرار</title></head>
+        <body dir='rtl' style='font-family:Cairo, Tahoma, Arial, sans-serif; padding:20px;'>
+            <h2 style='text-align:center; color:#0284c7; margin-bottom:5px;'>مجموعة الكرار - تقرير سجل المشتركين</h2>
+            <p style='text-align:center; color:#64748b; margin-bottom:15px;'>تاريخ التقرير: ${new Date().toLocaleDateString('ar-IQ')}</p>
+            <table style='width:100%; border-collapse:collapse; text-align:right;' border='1'>
+                <thead>
+                    <tr style='background-color:#0284c7; color:#fff;'>
+                        <th style='padding:10px;'>#</th>
+                        <th style='padding:10px;'>الاسم</th>
+                        <th style='padding:10px;'>IP</th>
+                        <th style='padding:10px;'>الباسورد</th>
+                        <th style='padding:10px;'>الهاتف</th>
+                        <th style='padding:10px;'>الحالة</th>
+                        <th style='padding:10px;'>الملاحظات</th>
+                        <th style='padding:10px;'>الموقع</th>
+                        <th style='padding:10px;'>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + wordHTML], { type: 'application/msword' });
+    downloadBlob(blob, `سجل_مشتركين_الكرار_${getTodayString()}.doc`);
+    showToast("✓ تم تصدير ملف الوورد بنجاح", "success");
+}
+
+function exportJSONBackup() {
+    if (allSubscribers.length === 0) {
+        showToast("لا توجد بيانات لعمل نسخة احتياطية", "info");
+        return;
+    }
+
+    const jsonStr = JSON.stringify(allSubscribers, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    downloadBlob(blob, `karrar_admin_backup_${getTodayString()}.json`);
+    showToast("✓ تم تنزيل النسخة الاحتياطية بنجاح", "success");
+}
+
+async function importJSONBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const list = JSON.parse(e.target.result);
+            if (!Array.isArray(list)) throw new Error("الملف غير صالح");
+
+            if (confirm(`تم العثور على ${list.length} مشترك. هل تريد رفعهم جميعاً لسحابة Supabase؟`)) {
+                showToast("جاري رفع المشتركين للسحابة...", "info");
+                
+                const uploadList = list.map(item => ({
+                    name: item.name,
+                    ip: item.ip || 'غير محدد',
+                    pass: item.pass || 'غير محدد',
+                    phone: item.phone || 'غير محدد',
+                    loc: item.loc || 'غير محدد',
+                    date: item.date || new Date().toLocaleDateString('ar-IQ')
+                }));
+
+                const { error } = await supabaseClient.from('subscribers').insert(uploadList);
+                if (error) throw error;
+
+                showToast(`✓ تم رفع ${list.length} مشترك للسحابة بنجاح!`, "success");
+                loadSubscribers();
+            }
+        } catch (err) {
+            showToast("فشل استيراد النسخة للسحابة: " + (err.message || err), "error");
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// --- 13. أدوات مساعدة وأمان ---
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function copyText(txt) {
+    if (!txt || txt === 'غير محدد') return;
+    navigator.clipboard.writeText(txt).then(() => {
+        showToast(`تم نسخ: ${txt}`, "info");
+    }).catch(() => {
+        showToast("تعذر النسخ", "error");
+    });
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span> <span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function getTodayString() {
+    return new Date().toISOString().slice(0, 10);
+}
+</script>
+
+</body>
+</html>
