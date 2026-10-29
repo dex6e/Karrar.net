@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="notranslate" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مجموعة الكرار - تسجيل مشترك</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: #060b14 !important; 
+            color: #ffffff; 
+            padding: 20px 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card { 
+            background-color: #0f172a !important; 
+            width: 100%; 
+            max-width: 440px; 
+            border-radius: 20px; 
+            padding: 24px 20px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9); 
+            border: 2px solid #1e293b; 
+        }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #1e293b; 
+            padding-bottom: 16px; 
+        }
+
+        /* --- الشعار المطابق للصورة تماماً --- */
+        .logo-wrap {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px dashed rgba(56, 189, 248, 0.6);
+            animation: rotateOrbit 12s linear infinite;
+        }
+
+        .orbit-ring-inner {
+            position: absolute;
+            width: 78%;
+            height: 78%;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(56, 189, 248, 0.35);
+            animation: rotateOrbitRev 15s linear infinite;
+        }
+
+        .logo-svg {
+            width: 85px;
+            height: 85px;
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.9));
+        }
+
+        @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotateOrbitRev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        .brand-title { 
+            font-size: 22px; 
+            font-weight: 800;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .brand-sub { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+        /* --- الحقول والمربعات الواضحة --- */
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+        
+        input[type="text"], input[type="tel"] { 
+            width: 100%; 
+            padding: 13px 14px; 
+            background-color: #1e293b !important; 
+            border: 2px solid #334155; 
+            border-radius: 10px; 
+            color: #ffffff !important; 
+            font-size: 15px; 
+            outline: none; 
+        }
+
+        input::placeholder { color: #94a3b8; font-size: 13px; }
+
+        input:focus { 
+            border-color: #38bdf8; 
+            background-color: #0f172a !important;
+        }
+        
+        .btn-gps { 
+            width: 100%; 
+            background: #0284c7; 
+            color: #ffffff; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 6px; 
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .file-box { 
+            background-color: #1e293b; 
+            border: 2px dashed #38bdf8; 
+            border-radius: 10px; 
+            padding: 12px 6px; 
+            text-align: center; 
+        }
+
+        input[type="file"] { display: none; }
+        
+        .file-label { 
+            display: inline-block; 
+            background: #334155; 
+            color: #ffffff; 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            width: 100%;
+        }
+
+        .file-status { display: block; font-size: 11px; color: #94a3b8; margin-top: 5px; }
+
+        .btn-wa { 
+            width: 100%; 
+            background: #16a34a; 
+            color: #ffffff; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 15px; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <div class="logo-wrap">
+            <div class="orbit-ring"></div>
+            <div class="orbit-ring-inner"></div>
+            <!-- الشعار المطابق للصورة -->
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- أمواج الإرسال فوق البرج -->
+                <path d="M42 22 C46 19, 54 19, 58 22" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M36 16 C43 11, 57 11, 64 16" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M30 10 C40 3, 60 3, 70 10" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                
+                <!-- رأس البرج المضيء -->
+                <circle cx="50" cy="27" r="4.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2"/>
+                
+                <!-- هيكل برج الإرسال -->
+                <path d="M47 31 L33 82 H67 L53 31 Z" stroke="#38bdf8" stroke-width="2.2" stroke-linejoin="round"/>
+                <path d="M43 43 L57 43 M39 56 L61 56 M36 69 L64 69" stroke="#0284c7" stroke-width="1.8"/>
+                <path d="M43 43 L61 56 M57 43 L39 56" stroke="#38bdf8" stroke-width="1.2"/>
+                <path d="M39 56 L64 69 M61 56 L36 69" stroke="#38bdf8" stroke-width="1.2"/>
+            </svg>
+        </div>
+        <h2 class="brand-title">مجموعة الكرار</h2>
+        <span class="brand-sub">بوابة تسجيل ومتابعة المشتركين</span>
+    </div>
+
+    <div class="form-group">
+        <label>اسم المشترك الكامل:</label>
+        <input type="text" id="custName" placeholder="أدخل اسم المشترك">
+    </div>
+
+    <!-- حقل الآي بي المستقل -->
+    <div class="form-group">
+        <label>عنوان الآي بي (IP):</label>
+        <input type="text" id="custIp" placeholder="مثال: 10.20.15.50">
+    </div>
+
+    <!-- حقل الباسورد المستقل -->
+    <div class="form-group">
+        <label>الرمز / الباسورد:</label>
+        <input type="text" id="custPass" placeholder="رمز النانو أو الراوتر">
+    </div>
+
+    <div class="form-group">
+        <label>رقم الهاتف:</label>
+        <input type="tel" id="custPhone" placeholder="07XXXXXXXXX">
+    </div>
+
+    <div class="form-group">
+        <label>الموقع الجغرافي (GPS):</label>
+        <input type="text" id="custLoc" placeholder="الصق رابط الموقع أو حدد تلقائياً">
+        <button type="button" class="btn-gps" onclick="getLocation()">📍 تحديد الموقع الحالي تلقائياً</button>
+    </div>
+
+    <div class="form-group">
+        <label>صور التركيب (نانو / راوتر):</label>
+        <div class="photo-grid">
+            <div class="file-box">
+                <label class="file-label" for="photo1">📷 صورة (1)</label>
+                <input type="file" id="photo1" accept="image/*" onchange="updateFile(1)">
+                <span class="file-status" id="st1">بدون صورة</span>
+            </div>
+            <div class="file-box">
+                <label class="file-label" for="photo2">📷 صورة (2)</label>
+                <input type="file" id="photo2" accept="image/*" onchange="updateFile(2)">
+                <span class="file-status" id="st2">بدون صورة</span>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn-wa" onclick="sendToWhatsApp()">🟢 مشاركة إلى كروب الواتساب</button>
+</div>
+
+<script>
+function getLocation() {
+    const locField = document.getElementById('custLoc');
+    if (!navigator.geolocation) {
+        alert("المتصفح لا يدعم سحب اللوكيشن تلقائياً");
+        return;
+    }
+    locField.placeholder = "جاري قراءة الموقع...";
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            locField.value = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        },
+        () => {
+            alert("يرجى التأكد من تفعيل الـ GPS بالهاتف");
+            locField.placeholder = "تعذر سحب الموقع تلقائياً";
+        },
+        { enableHighAccuracy: true }
+    );
+}
+
+function updateFile(num) {
+    const input = document.getElementById('photo' + num);
+    const status = document.getElementById('st' + num);
+    if (input.files && input.files[0]) {
+        status.innerText = "✓ تم اختيار صورة";
+        status.style.color = "#38bdf8";
+    } else {
+        status.innerText = "بدون صورة";
+        status.style.color = "#94a3b8";
+    }
+}
+
+async function sendToWhatsApp() {
+    const name = document.getElementById('custName').value.trim() || 'غير محدد';
+    const ip = document.getElementById('custIp').value.trim() || 'غير محدد';
+    const pass = document.getElementById('custPass').value.trim() || 'غير محدد';
+    const phone = document.getElementById('custPhone').value.trim() || 'غير محدد';
+    const loc = document.getElementById('custLoc').value.trim() || 'غير محدد';
+
+    const message = 
+`📌 *مشترك جديد - مجموعة الكرار*
+━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${name}
+🌐 *الآي بي (IP):* ${ip}
+🔑 *الرمز / الباسورد:* ${pass}
+📞 *الهاتف:* ${phone}
+📍 *الموقع:* ${loc}
+━━━━━━━━━━━━━━━━━━`;
+
+    const p1 = document.getElementById('photo1').files[0];
+    const p2 = document.getElementById('photo2').files[0];
+    const filesList = [];
+    if (p1) filesList.push(p1);
+    if (p2) filesList.push(p2);
+
+    if (navigator.canShare && filesList.length > 0 && navigator.canShare({ files: filesList })) {
+        try {
+            await navigator.share({
+                title: 'مجموعة الكرار',
+                text: message,
+                files: filesList
+            });
+            return;
+        } catch (e) {}
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+}
+</script>
+
+</body>
+</html>
