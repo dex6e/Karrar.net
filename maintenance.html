@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="notranslate" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مجموعة الكرار - لوحة موظفي الصيانة الميدانية</title>
+    
+    <!-- مكتبة Supabase JS الرسمية -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050914;
+            --card-bg: rgba(16, 26, 48, 0.95);
+            --primary: #38bdf8;
+            --primary-dark: #0284c7;
+            --accent-green: #22c55e;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #1f3154;
+            --border-focus: #f59e0b;
+            --input-bg: #091122;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        body { 
+            background: radial-gradient(circle at top, #141c2e, var(--bg-dark)); 
+            color: var(--text-main); 
+            padding: 20px 14px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1050px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* شريط التنقل العلوي */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(16, 26, 48, 0.85);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-btn-admin {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        .nav-btn-admin:hover { filter: brightness(1.2); }
+        .nav-btn-active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            width: 100%; 
+            border-radius: 24px; 
+            padding: 24px 20px; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08); 
+            border: 1px solid var(--border-color); 
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        /* الهيدر والشعار */
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 18px; 
+            position: relative;
+        }
+
+        .logo-wrap {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px dashed rgba(245, 158, 11, 0.6);
+            animation: rotateOrbit 12s linear infinite;
+        }
+
+        .orbit-ring-inner {
+            position: absolute;
+            width: 78%;
+            height: 78%;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(245, 158, 11, 0.35);
+            animation: rotateOrbitRev 15s linear infinite;
+        }
+
+        .logo-svg {
+            width: 68px;
+            height: 68px;
+            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.8));
+        }
+
+        @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotateOrbitRev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        .brand-title { 
+            font-size: 22px; 
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #fef3c7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2px;
+        }
+
+        .brand-sub { 
+            font-size: 13px; 
+            color: #fbbf24; 
+            font-weight: 600; 
+        }
+
+        /* كروت الإحصائيات السريعة */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(9, 17, 34, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-num { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+        .stat-lbl { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+        /* شريط الفلاتر والبحث */
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 240px;
+        }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 12px 14px; 
+            background: var(--input-bg); 
+            border: 1.5px solid #233554; 
+            border-radius: 11px; 
+            color: #fff; 
+            font-size: 14px; 
+            outline: none; 
+            transition: all 0.25s ease;
+        }
+        input:focus, textarea:focus { 
+            border-color: var(--border-focus); 
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.25); 
+        }
+
+        .filter-btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-btn.active {
+            background: #f59e0b;
+            color: #000;
+            border-color: #f59e0b;
+        }
+
+        /* تصميم كروت المهام (Task Cards) المخصصة للفنيين */
+        .tasks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .task-card {
+            background: rgba(9, 17, 34, 0.95);
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .task-card:hover {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+        }
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .task-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .task-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        @media (min-width: 640px) {
+            .task-body { grid-template-columns: 1fr 1fr; }
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .info-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            min-width: 80px;
+        }
+        .info-val {
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .desc-box {
+            grid-column: 1 / -1;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed #334155;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            border-top: 1px solid #1e293b;
+            padding-top: 12px;
+            align-items: center;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 9px 14px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-maps {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff;
+        }
+        .btn-wa-call {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        .btn-update {
+            background: #f59e0b;
+            color: #000;
+            font-weight: 800;
+        }
+        .btn-complete {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+        .btn-complete:hover { background: #22c55e; color: #fff; }
+        .btn-del-task {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            margin-right: auto;
+        }
+        .btn-del-task:hover { background: #ef4444; color: #fff; }
+
+        .copy-chip {
+            cursor: pointer;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            display: inline-block;
+        }
+        .copy-chip:hover { border-color: #f59e0b; color: #f59e0b; }
+
+        .status-badge-task {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            border: 1px solid transparent;
+        }
+        .status-new { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+        .status-progress { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+        .status-done { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
+
+        /* Modal نافذة تحديث التاسك */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+        }
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+
+        /* Toast Notifications */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            border-right: 4px solid #f59e0b;
+            font-size: 13px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 350px;
+        }
+        .toast.success { border-right-color: #22c55e; }
+        .toast.error { border-right-color: #ef4444; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- شريط التنقل العلوي -->
+    <div class="top-nav">
+        <div style="font-weight:800; font-size:14px; color:#fbbf24; display:flex; align-items:center; gap:6px;">
+            🛠️ قسم الصيانة الميدانية - مجموعة الكرار
+        </div>
+        <div class="nav-links">
+            <a href="rhk.html" class="nav-btn nav-btn-admin">👑 لوحة الأدمن (المشتركين)</a>
+            <a href="maintenance.html" class="nav-btn nav-btn-active">🔧 لوحة موظفي الصيانة</a>
+        </div>
+    </div>
+
+    <!-- كارت الإحصائيات والهيدر -->
+    <div class="card">
+        <div class="header">
+            <div class="logo-wrap">
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring-inner"></div>
+                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- برج الإرسال بلون كهرماني ذهبي للصيانة -->
+                    <path d="M42 22 C46 19, 54 19, 58 22" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M36 16 C43 11, 57 11, 64 16" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M30 10 C40 3, 60 3, 70 10" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="50" cy="27" r="4.5" fill="#ffffff" stroke="#f59e0b" stroke-width="2"/>
+                    <path d="M47 31 L33 82 H67 L53 31 Z" stroke="#f59e0b" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M43 43 L57 43 M39 56 L61 56 M36 69 L64 69" stroke="#d97706" stroke-width="1.8"/>
+                    <path d="M43 43 L61 56 M57 43 L39 56" stroke="#f59e0b" stroke-width="1.2"/>
+                    <path d="M39 56 L64 69 M61 56 L36 69" stroke="#f59e0b" stroke-width="1.2"/>
+                </svg>
+            </div>
+            <h2 class="brand-title">مهام وتاسكات الصيانة</h2>
+            <span class="brand-sub">توجيهات الأعطال والمهام الميدانية المباشرة من الأدمن</span>
+        </div>
+
+        <!-- كروت الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-num" id="totalTasksCount" style="color:#38bdf8;">0</div>
+                <div class="stat-lbl">إجمالي المهام</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="pendingTasksCount" style="color:#fbbf24;">0</div>
+                <div class="stat-lbl">قيد الانتظار / جديدة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="progressTasksCount" style="color:#60a5fa;">0</div>
+                <div class="stat-lbl">قيد التنفيذ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="completedTasksCount" style="color:#4ade80;">0</div>
+                <div class="stat-lbl">تم الإصلاح والإنجاز</div>
+            </div>
+        </div>
+
+        <!-- شريط البحث والفلترة -->
+        <div class="controls-row">
+            <div class="search-box">
+                <input type="text" id="taskSearchInput" placeholder="🔍 ابحث في التاسكات (باسم المشترك، الهاتف، العطل، أو الفني)..." onkeyup="filterTasks()">
+            </div>
+            <div class="filter-btn-group">
+                <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+                <button class="filter-btn" onclick="setFilter('pending', this)">جديدة</button>
+                <button class="filter-btn" onclick="setFilter('progress', this)">قيد العمل</button>
+                <button class="filter-btn" onclick="setFilter('done', this)">مكتملة</button>
+                <button class="filter-btn" onclick="loadTasks()" title="تحديث من السحابة" style="background:#0284c7; color:#fff;">🔄 تحديث</button>
+            </div>
+        </div>
+
+        <!-- قائمة كروت المهام الموجهة للفنيين -->
+        <div class="tasks-container" id="tasksList">
+            <div style="text-align:center; padding:35px; color:#94a3b8;">جاري تحميل مهام الصيانة...</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal نافذة تحديث حالة المهمة وكتابة تقرير الفني -->
+<div class="modal-overlay" id="updateTaskModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 style="font-size:16px; color:#fbbf24;" id="updateModalTitle">تحديث حالة المهمة</h3>
+            <button class="modal-close" onclick="closeUpdateModal()">&times;</button>
+        </div>
+
+        <input type="hidden" id="editTaskId">
+
+        <div style="display:flex; flex-direction:column; gap:12px; text-align:right;">
+            <div>
+                <label>حالة المهمة (اكتب بحرية بدون قيود):</label>
+                <input type="text" id="editTaskStatus" placeholder="مثال: تم الإصلاح، قيد الفحص، المشترك غير موجود، يحتاج قطع غيار...">
+            </div>
+
+            <div>
+                <label>تقرير الفني / ما تم إنجازه:</label>
+                <textarea id="editTechNotes" rows="3" placeholder="اكتب تقرير ما قمت بفعله (مثلاً: تم استبدال السلك، الإشارة أصبحت -58)..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="button" class="btn-action btn-update" style="flex:1;" onclick="saveTaskUpdate()">
+                    💾 حفظ التحديث
+                </button>
+                <button type="button" class="btn-action btn-wa-call" onclick="sendCompletionNotice()">
+                    🟢 إشعار الأدمن بالواتساب
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- حاوية التنبيهات العائمة -->
+<div id="toastContainer"></div>
+
+<script>
+/**
+ * مجموعة الكرار - لوحة موظفي الصيانة
+ * استعراض وتنفيذ مهام الصيانة والتواصل مع المشتركين
+ */
+
+const SUPABASE_URL = 'https://ojgogddxpedpeodkybbi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qZ29nZGR4cGVkcGVvZGt5YmJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyODAwMzcsImV4cCI6MjEwODg1NjAzN30.xfKXw0k0f0WalHI1JsKNdwcphpgYab-l0YyAJO-FRfM';
+
+let supabaseClient = null;
+let allTasks = [];
+let currentFilter = 'all';
+
+window.addEventListener('DOMContentLoaded', () => {
+    initSupabase();
+    loadTasks();
+});
+
+function initSupabase() {
+    try {
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+    } catch(e) {}
+}
+
+// --- 1. تحميل المهام ---
+async function loadTasks() {
+    const listEl = document.getElementById('tasksList');
+    listEl.innerHTML = '<div style="text-align:center; padding:35px; color:#fbbf24;">🔄 جاري جلب التاسكات الموجهة...</div>';
+
+    let cloudTasks = [];
+    if (supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('tasks')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (!error && data) {
+                cloudTasks = data;
+            }
+        } catch(e) {}
+    }
+
+    // جلب المهام المحلية ودمجها منعاً لضياع أي تاسك
+    let localTasks = [];
+    try {
+        localTasks = JSON.parse(localStorage.getItem('karrar_maint_tasks') || '[]');
+    } catch(e) {}
+
+    // دمج فريد حسب المعرّف
+    const map = new Map();
+    localTasks.forEach(t => map.set(t.id, t));
+    cloudTasks.forEach(t => map.set(t.id, t));
+
+    allTasks = Array.from(map.values()).sort((a, b) => b.id - a.id);
+
+    // تحديث التخزين المحلي الاحتياطي
+    try {
+        localStorage.setItem('karrar_maint_tasks', JSON.stringify(allTasks));
+    } catch(e) {}
+
+    updateStats();
+    renderTasks();
+}
+
+// --- 2. رسم كروت المهام ---
+function renderTasks() {
+    const listEl = document.getElementById('tasksList');
+    const query = document.getElementById('taskSearchInput').value.toLowerCase().trim();
+
+    let filtered = allTasks;
+
+    // فلترة التبويب
+    if (currentFilter === 'pending') {
+        filtered = filtered.filter(t => (t.status || '').includes('انتظار') || (t.status || '').includes('جديدة'));
+    } else if (currentFilter === 'progress') {
+        filtered = filtered.filter(t => (t.status || '').includes('تنفيذ') || (t.status || '').includes('عمل') || (t.status || '').includes('فحص'));
+    } else if (currentFilter === 'done') {
+        filtered = filtered.filter(t => (t.status || '').includes('تم') || (t.status || '').includes('مكتمل') || (t.status || '').includes('إصلاح'));
+    }
+
+    // فلترة البحث
+    if (query) {
+        filtered = filtered.filter(t => 
+            (t.cust_name && t.cust_name.toLowerCase().includes(query)) ||
+            (t.cust_phone && t.cust_phone.toLowerCase().includes(query)) ||
+            (t.task_title && t.task_title.toLowerCase().includes(query)) ||
+            (t.technician_name && t.technician_name.toLowerCase().includes(query)) ||
+            (t.status && t.status.toLowerCase().includes(query))
+        );
+    }
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">لا توجد أي مهام صيانة مطابقة حالياً. ✨</div>';
+        return;
+    }
+
+    listEl.innerHTML = '';
+    filtered.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+
+        // حساب فئة لون شارة الحالة
+        let stClass = 'status-new';
+        const st = task.status || '';
+        if (st.includes('تم') || st.includes('مكتمل') || st.includes('إصلاح')) stClass = 'status-done';
+        else if (st.includes('تنفيذ') || st.includes('عمل') || st.includes('فحص')) stClass = 'status-progress';
+
+        // إعداد رابط الخريطة
+        const hasLoc = task.cust_loc && task.cust_loc !== 'غير محدد';
+        const mapBtn = hasLoc 
+            ? `<a href="${escapeHtml(task.cust_loc)}" target="_blank" rel="noopener noreferrer" class="btn-action btn-maps">🗺️ فتح الموقع بالخرائط</a>`
+            : `<button class="btn-action" style="background:#1e293b; color:#64748b; cursor:not-allowed;" disabled>بدون موقع GPS</button>`;
+
+        // هاتف المشترك
+        const cleanPhone = (task.cust_phone || '').replace(/[^0-9]/g, '');
+
+        card.innerHTML = `
+            <div class="task-header">
+                <div class="task-title">
+                    <span>🚨</span>
+                    <span>${escapeHtml(task.task_title || 'مهمة صيانة')}</span>
+                    <span class="status-badge-task ${stClass}">${escapeHtml(task.status || 'جديدة')}</span>
+                </div>
+                <div class="task-meta">
+                    📅 ${escapeHtml(task.date || '')} | 👨‍🔧 المكلف: <b>${escapeHtml(task.technician_name || 'عام')}</b>
+                </div>
+            </div>
+
+            <div class="task-body">
+                <div class="info-row">
+                    <span class="info-label">👤 المشترك:</span>
+                    <span class="info-val">${escapeHtml(task.cust_name || 'غير محدد')}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">📞 الهاتف:</span>
+                    <span class="info-val">
+                        ${escapeHtml(task.cust_phone || 'غير محدد')}
+                        ${cleanPhone ? `<a href="tel:${cleanPhone}" class="btn-chat-wa" style="color:#38bdf8; margin-right:6px;" title="اتصال">📞</a>` : ''}
+                        ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-chat-wa" title="واتساب">💬</a>` : ''}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">🌐 الـ IP:</span>
+                    <span class="info-val">
+                        <span class="copy-chip" onclick="copyText('${escapeHtml(task.cust_ip || '')}')" title="اضغط للنسخ">
+                            ${escapeHtml(task.cust_ip || 'غير محدد')} 📋
+                        </span>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">🏷️ الحالة الحالية:</span>
+                    <span class="info-val" style="color:#fbbf24;">${escapeHtml(task.status || 'قيد الانتظار')}</span>
+                </div>
+
+                ${task.task_desc ? `<div class="desc-box"><b>📝 تعليمات الأدمن:</b> ${escapeHtml(task.task_desc)}</div>` : ''}
+                ${task.technician_notes ? `<div class="desc-box" style="border-color:#22c55e; color:#86efac;"><b>🔧 تقرير الفني:</b> ${escapeHtml(task.technician_notes)}</div>` : ''}
+            </div>
+
+            <div class="task-actions">
+                ${mapBtn}
+                ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-action btn-wa-call">💬 واتساب المشترك</a>` : ''}
+                <button type="button" class="btn-action btn-update" onclick="openUpdateModal(${task.id})">✏️ تحديث الحالة</button>
+                <button type="button" class="btn-action btn-complete" onclick="markTaskDone(${task.id})">✔️ إكمال المهمة</button>
+                <button type="button" class="btn-action btn-del-task" onclick="deleteTask(${task.id})">🗑️ حذف</button>
+            </div>
+        `;
+        listEl.appendChild(card);
+    });
+}
+
+// --- 3. إحصائيات سريعة ---
+function updateStats() {
+    document.getElementById('totalTasksCount').innerText = allTasks.length;
+
+    let pending = 0, progress = 0, done = 0;
+    allTasks.forEach(t => {
+        const s = t.status || '';
+        if (s.includes('تم') || s.includes('مكتمل') || s.includes('إصلاح')) done++;
+        else if (s.includes('تنفيذ') || s.includes('عمل') || s.includes('فحص')) progress++;
+        else pending++;
+    });
+
+    document.getElementById('pendingTasksCount').innerText = pending;
+    document.getElementById('progressTasksCount').innerText = progress;
+    document.getElementById('completedTasksCount').innerText = done;
+}
+
+// --- 4. تحديث حالة المهمة (Modal) ---
+function openUpdateModal(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    document.getElementById('editTaskId').value = task.id;
+    document.getElementById('editTaskStatus').value = task.status || '';
+    document.getElementById('editTechNotes').value = task.technician_notes || '';
+    document.getElementById('updateModalTitle').innerText = `تحديث مهمة: ${task.cust_name}`;
+
+    document.getElementById('updateTaskModal').style.display = 'flex';
+}
+
+function closeUpdateModal() {
+    document.getElementById('updateTaskModal').style.display = 'none';
+}
+
+async function saveTaskUpdate() {
+    const taskId = Number(document.getElementById('editTaskId').value);
+    const newStatus = document.getElementById('editTaskStatus').value.trim() || 'قيد المتابعة';
+    const techNotes = document.getElementById('editTechNotes').value.trim();
+
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.status = newStatus;
+    task.technician_notes = techNotes;
+
+    // تحديث في السحابة
+    if (supabaseClient) {
+        try {
+            await supabaseClient.from('tasks').update({
+                status: newStatus,
+                technician_notes: techNotes
+            }).eq('id', taskId);
+        } catch(e) {}
+    }
+
+    // تحديث محلي
+    try {
+        localStorage.setItem('karrar_maint_tasks', JSON.stringify(allTasks));
+    } catch(e) {}
+
+    closeUpdateModal();
+    updateStats();
+    renderTasks();
+    showToast("✓ تم تحديث المهمة بنجاح!", "success");
+}
+
+async function markTaskDone(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.status = 'تم الإصلاح والإنجاز بنجاح';
+
+    if (supabaseClient) {
+        try {
+            await supabaseClient.from('tasks').update({ status: task.status }).eq('id', taskId);
+        } catch(e) {}
+    }
+
+    try {
+        localStorage.setItem('karrar_maint_tasks', JSON.stringify(allTasks));
+    } catch(e) {}
+
+    updateStats();
+    renderTasks();
+    showToast("✓ تم إكمال المهمة بنجاح! أحسنت 👏", "success");
+}
+
+async function deleteTask(taskId) {
+    if (!confirm("هل أنت متأكد من حذف هذا التاسك؟")) return;
+
+    allTasks = allTasks.filter(t => t.id !== taskId);
+
+    if (supabaseClient) {
+        try {
+            await supabaseClient.from('tasks').delete().eq('id', taskId);
+        } catch(e) {}
+    }
+
+    try {
+        localStorage.setItem('karrar_maint_tasks', JSON.stringify(allTasks));
+    } catch(e) {}
+
+    updateStats();
+    renderTasks();
+    showToast("تم حذف التاسك", "info");
+}
+
+// --- 5. إشعار الأدمن عبر الواتساب باكتمال المهمة ---
+function sendCompletionNotice() {
+    const taskId = Number(document.getElementById('editTaskId').value);
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const newStatus = document.getElementById('editTaskStatus').value.trim() || 'تم الإصلاح';
+    const techNotes = document.getElementById('editTechNotes').value.trim() || 'تم إنهاء العمل وفحص الخدمة';
+
+    const message = 
+`✅ *تقرير إنجاز صيانة - مجموعة الكرار*
+━━━━━━━━━━━━━━━━━━
+👤 *المشترك:* ${task.cust_name}
+🌐 *الـ IP:* ${task.cust_ip}
+📌 *المهمة الأصلية:* ${task.task_title}
+🏷️ *الحالة الجديدة:* ${newStatus}
+📝 *تقرير الفني:* ${techNotes}
+━━━━━━━━━━━━━━━━━━
+تم التنفيذ بواسطة الفني: ${task.technician_name || 'فريق الصيانة'}`;
+
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+// --- 6. الفلاتر والبحث ---
+function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTasks();
+}
+
+function filterTasks() {
+    renderTasks();
+}
+
+// --- 7. دوال مساعدة ---
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function copyText(txt) {
+    if (!txt || txt === 'غير محدد') return;
+    navigator.clipboard.writeText(txt).then(() => {
+        showToast(`تم نسخ: ${txt}`, "info");
+    }).catch(() => {
+        showToast("تعذر النسخ", "error");
+    });
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span> <span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
+}
+</script>
+
+</body>
+</html>
+
